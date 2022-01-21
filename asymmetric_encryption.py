@@ -5,7 +5,7 @@ Created on Thu Jan 14 12:17:58 2022
 @author: yosra
 """
 import rsa
-from elgamal.elgamal import Elgamal
+from elgamal import elgamal
 
 # Asymmetric encryption : RSA & ElGamal 
 
@@ -53,11 +53,20 @@ def verify_signature_rsa(data, signature, public_key):
 
 # ElGamal
 def genkey_elgamal():
-    (pubkey, privkey) = Elgamal.newkeys(2048)    
+    key_pair = elgamal.generate_keys(256)
+    (pubkey, privkey) = key_pair['publicKey'], key_pair['privateKey'] 
     return (pubkey, privkey)        
 
 def encrypt_elgamal(data, public_key):
-    return Elgamal.encrypt(data.encode(), public_key)
+    return elgamal.encrypt(public_key, data)
 
 def decrypt_elgamal(encrypted_data, private_key):
-    return Elgamal.decrypt(encrypted_data, private_key).decode()
+    return elgamal.decrypt(private_key, encrypted_data)
+
+def test_elgamal():
+    pubkey, privkey = genkey_elgamal()
+    encrypted_data = encrypt_elgamal(input("Data to encrypt ? : "), pubkey)
+    print("Encrypted data is : ", encrypted_data)
+    print("Decrypted data is : ", decrypt_elgamal(encrypted_data, privkey))
+
+#test_elgamal()

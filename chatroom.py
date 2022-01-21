@@ -7,7 +7,7 @@ Created on Thu Jan 14 06:40:40 2022
 from socket import socket, gethostname, AF_INET, SOCK_STREAM, error
 from hashing import generate_secure_password
 from symmetric_encryption import encrypt_aes, decrypt_aes
-from asymmetric_encryption import genkey_rsa, encrypt_rsa, decrypt_rsa, import_privkey_rsa, import_pubkey_rsa
+from asymmetric_encryption import encrypt_rsa, decrypt_rsa, import_privkey_rsa, import_pubkey_rsa
 import sys
 
 
@@ -55,11 +55,11 @@ def chat_server(username, port, USERNAME_PEER, PORT_PEER, PUBLIC_KEY_PEER):
         connection, address = server_socket.accept()         
         
         # Wait for peer's message
-        encoded_message, encoded_symmetric_key = connection.recv(4096).decode().splitlines() # Buffer's size is up to 4096 bytes
+        encrypted_message, encrypted_symmetric_key = connection.recv(4096).decode().splitlines() # Buffer's size is up to 4096 bytes
         
         # Decode the message
-        symmetric_key = decrypt_rsa(encoded_symmetric_key, import_privkey_rsa(username))
-        message = decrypt_aes(encoded_message, symmetric_key)
+        symmetric_key = decrypt_rsa(encrypted_symmetric_key, import_privkey_rsa(username))
+        message = decrypt_aes(encrypted_message, symmetric_key)
         
         print("\n", USERNAME_PEER, " : ", message)
             
@@ -82,19 +82,13 @@ def send_msg(PORT_PEER, PUBLIC_KEY_PEER):
     # Encrypt message 
         # Data encapsulation scheme ( symmetric-key cryptosystem ) => The encryption/decryption of messages that can be very long is done by the more efficient symmetric-key scheme
     symmetric_key = generate_secure_password()
-    encoded_message = encrypt_aes(message, symmetric_key)
+    encrypted_message = encrypt_aes(message, symmetric_key)
     
         # Key encapsulation scheme ( public-key cryptosystem ) => Inefficient public-key scheme is used only to encrypt/decrypt a short key value
-    encoded_symmetric_key = encrypt_rsa(symmetric_key, PUBLIC_KEY_PEER)
+    encrypted_symmetric_key = encrypt_rsa(symmetric_key, PUBLIC_KEY_PEER)
     
     # Send encrypted message
-    client_socket.send((encoded_message.decode()+"\n"+ encoded_symmetric_key).encode())
+    client_socket.send((encrypted_message.decode()+"\n"+ encrypted_symmetric_key).encode())
     
     # Close socket
     client_socket.close()
-    
-# =============================================================================
-# print("\n"+encrypt_aes('yosra', generate_secure_password()).decode())
-# pubkey, privkey = genkey_rsa()
-# print(encrypt_rsa('yosra', pubkey))
-# =============================================================================

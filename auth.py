@@ -152,6 +152,7 @@ def signUp() :
 
 def signIn() :
     from argon2 import PasswordHasher
+    from argon2.exceptions import VerifyMismatchError
     waiting_till_next_login = 0 # in seconds
     
     name_entered = input("Your username or your email ? : ")
@@ -166,12 +167,18 @@ def signIn() :
     are_credentials_correct = False if user is None else True
     if user is not None:     
         password_hasher = PasswordHasher(memory_cost = 15360, time_cost = 2, parallelism = 1, salt_len = 16)
-        is_password_correct = password_hasher.verify(user.password, password_entered)
+        try:
+            is_password_correct = password_hasher.verify(user.password, password_entered)
+        except VerifyMismatchError:
+            is_password_correct = False
+            
         are_credentials_correct = True if is_password_correct is True else False
         # Account lockout mechanism
-        user = User.objects(username=user.username).modify(inc__failed_logins_counter=1)
-        if user.failed_logins_counter > ACCOUNT_LOCKOUT_THRESHOLD:
-            waiting_till_next_login = 2**user.failed_logins_counter
+        if is_password_correct is False:
+            user = User.objects(username=user.username).modify(inc__failed_logins_counter=1)
+            print(user.failed_logins_counter)
+            if user.failed_logins_counter >= ACCOUNT_LOCKOUT_THRESHOLD:
+                waiting_till_next_login = 2**user.failed_logins_counter
         
     
     if are_credentials_correct is False:
@@ -188,7 +195,7 @@ def signIn() :
         entered_secret_code = int(input("We've sent you a secret code of 6 digits on your email. Please type it ? :"))
         if entered_secret_code != secret_code:
             user = User.objects(username=user.username).modify(inc__failed_logins_counter=1)
-            if user.failed_logins_counter > ACCOUNT_LOCKOUT_THRESHOLD:
+            if user.failed_logins_counter >= ACCOUNT_LOCKOUT_THRESHOLD:
                 waiting_till_next_login = 2**user.failed_logins_counter
             print("Invalid Code!")
             if waiting_till_next_login > 0:
@@ -219,8 +226,8 @@ def signIn() :
 
         
 # =============================================================================
-#def send_auth_email(recipient_email_address, secret_code):
-#    import smtplib
+# def send_auth_email(recipient_email_address, secret_code):
+#     import smtplib
 #     FROM = 'yosra.dridi270@gmail.com'    
 #     TO = [recipient_email_address]     
 #     SUBJECT = "Authentication Secret Code"    

@@ -61,8 +61,7 @@ def manage_encoding():
     else:
         raise Exception('Invalid choice !')
     
-    print('The result is : ',result)
-    
+    print('The result is : ',result)  
     
 def manage_hashing():
     import hashing
@@ -84,6 +83,7 @@ def manage_hashing():
             print("The password is : ", cracked_password)
     else:
         raise Exception('Invalid choice !')
+
     
 def manage_symmetric_encryption():
     import symmetric_encryption
@@ -99,9 +99,9 @@ def manage_symmetric_encryption():
     msg = input("Your message ? : ")
     key = input("Your key ? : ")
     if choice == 1:
-        print('The encrypted data is : ',getattr(symmetric_encryption, 'encrypt_'+algorithm.lower())(msg, key))
+        print('The encrypted data is : ',getattr(symmetric_encryption, 'encrypt_'+algorithm.lower())(msg, key).decode())
     elif choice == 2:
-        print('The decrypted data is : ',getattr(symmetric_encryption, 'decrypt_'+algorithm.lower())(msg, key))
+        print('The decrypted data is : ',getattr(symmetric_encryption, 'decrypt_'+algorithm.lower())(msg.encode(), key))
     else:
         raise Exception('Invalid choice !')
     
@@ -111,25 +111,31 @@ def manage_asymmetric_encryption(username):
     algorithm = input("PLease choose an algorithm : RSA or ElGamal \n_ : ").strip()
     if algorithm.lower() not in ['rsa', 'elgamal']:
         raise Exception('Invalid algorithm !')
-    
-    print("1- Generate Key Pair\n")
-    print("2- Encrypt\n")
-    print("3- Decrypt\n")
-    choice = int(input("Your choice ? : ").strip())
-    
-    msg = input("Your message ? : ") 
-    if choice == 1:
-        pubkey, privkey = asymmetric_encryption.genkey_rsa()
-        asymmetric_encryption.export_key_pair_rsa(username+"_test", pubkey, privkey)
-        print("pubkey = ", pubkey,"\nprivkey = ", privkey,"\n")    
-    elif choice == 2:
-        pubkey = asymmetric_encryption.import_pubkey_rsa(username+"_test")
-        print('The encrypted data is : ',getattr(asymmetric_encryption, 'encrypt_'+algorithm.lower())(msg, pubkey))
-    elif choice == 3:
-        privkey = asymmetric_encryption.import_privkey_rsa(username+"_test")
-        print('The decrypted data is : ',getattr(asymmetric_encryption, 'decrypt_'+algorithm.lower())(msg, privkey))
-    else:
-        raise Exception('Invalid choice !')
+    if algorithm.lower() == 'rsa':
+        print("1- Generate Key Pair\n")
+        print("2- Encrypt\n")
+        print("3- Decrypt\n")
+        choice = int(input("Your choice ? : ").strip())
+        
+        if choice == 1:
+            pubkey, privkey = asymmetric_encryption.genkey_rsa()
+            asymmetric_encryption.export_key_pair_rsa(username+"_test", pubkey, privkey)
+            print("pubkey = ", pubkey,"\nprivkey = ", privkey,"\n")    
+        elif choice == 2:
+            msg = input("Your message ? : ") 
+            pubkey = asymmetric_encryption.import_pubkey_rsa(username+"_test")
+            print('The encrypted data is : ',getattr(asymmetric_encryption, 'encrypt_'+algorithm.lower())(msg, pubkey))
+        elif choice == 3:        
+            msg = input("Your message ? : ") 
+            privkey = asymmetric_encryption.import_privkey_rsa(username+"_test")
+            print('The decrypted data is : ',getattr(asymmetric_encryption, 'decrypt_'+algorithm.lower())(msg, privkey))
+        else:
+            raise Exception('Invalid choice !')
+    elif algorithm.lower() == 'elgamal':
+        pubkey, privkey = asymmetric_encryption.genkey_elgamal()
+        encrypted_data = asymmetric_encryption.encrypt_elgamal(input("Data to encrypt ? : "), pubkey)
+        print("Encrypted data is : ", encrypted_data)
+        print("Decrypted data is : ", asymmetric_encryption.decrypt_elgamal(encrypted_data, privkey))
         
 def manage_secure_chatroom(username, port):
     from chatroom import chat

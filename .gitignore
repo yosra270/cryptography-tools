@@ -130,3 +130,6 @@ dmypy.json
 
 # PEM files
 *.pem
+
+# Public keys server
+key_server.txt
