@@ -14,6 +14,7 @@ import time
 from validate_email import validate_email as is_email_address_real
 from asymmetric_encryption import genkey_rsa, export_key_pair_rsa
 
+
 ACCOUNT_LOCKOUT_THRESHOLD = 3
 MAX_PASSWORD_CONFIRMATION_ATTEMPTS = 5
 
@@ -105,12 +106,15 @@ def hash_password(password):
     return hash
 
 def send_auth_email(recipient_email_address, secret_code):
-    import smtplib , ssl  
+    import smtplib , ssl, configparser  
     
     port = 587  # For starttls
     smtp_server = "smtp.gmail.com"
-    sender_email = 'dyosra892@gmail.com'
-    sender_password = 'iOv_12345678'   
+    config = configparser.ConfigParser()
+    config.read('config.ini')
+    sender_credentials = config['doube-factor.sender.credentials']
+    sender_email = sender_credentials['Email']
+    sender_password = sender_credentials['Password']
     
     message = f"""\
 Subject: Verification code
