@@ -1,0 +1,8 @@
+pycryptodome
+rsa
+py3-validate-email
+pwnedpasswords
+argon2-cffi
+mongoengine
+pymongo
+py3DNS
