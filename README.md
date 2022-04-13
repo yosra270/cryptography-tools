@@ -21,7 +21,7 @@ The data will be saved in a user table (Username, Email, pwd (hashed using **Arg
   
 
 
-* **Phase 3: Menu**
+* **Phase 3: Menu + Chatroom**
 
     1. Coding/decoding of a message
     2. Hash of a message/Cracking a hashed message (Md5, SHA1, SHA256, ...)
